@@ -1,0 +1,104 @@
+{
+    "$schema": "./node_modules/fallow/schema.json",
+    // Inertia + Laravel entries the static graph cannot see: app.tsx is
+    // referenced from the blade @vite directive, pages are resolved by name.
+    "entry": [
+        "resources/js/app.tsx",
+        "resources/css/app.css",
+        "vite.config.ts",
+        "eslint.config.js"
+    ],
+    "dynamicallyLoaded": [
+        "resources/js/pages/**/*.tsx"
+    ],
+    // Generated Wayfinder output, build artifacts, and framework-owned
+    // vendor assets are not source. (The framework's debug/exception
+    // renderers pull in shiki/tippy/alpine via their own CSS — that is
+    // Laravel's business, not the project's.)
+    "ignorePatterns": [
+        "resources/js/actions/**",
+        "resources/js/routes/**",
+        "resources/js/wayfinder/**",
+        "public/build/**",
+        "bootstrap/ssr/**",
+        "vendor/**"
+    ],
+    "ignoreDependencies": [
+        // Used by `php artisan dev` (Laravel's DevCommand shells out to it).
+        "concurrently",
+        // Referenced by name in eslint.config.js resolver settings.
+        "eslint-import-resolver-typescript",
+        // Platform-specific build binaries used only on CI matrices.
+        "@rollup/rollup-linux-x64-gnu",
+        "@rollup/rollup-win32-x64-msvc",
+        "@tailwindcss/oxide-linux-x64-gnu",
+        "@tailwindcss/oxide-win32-x64-msvc",
+        "lightningcss-linux-x64-gnu",
+        "lightningcss-win32-x64-msvc"
+    ],
+    "overrides": [
+        {
+            // Starter public API: shadcn primitives and the sections library
+            // are complete building blocks by design — generated projects
+            // compose what they need and delete the rest.
+            "files": [
+                "resources/js/components/ui/**",
+                "resources/js/components/sections/**"
+            ],
+            "rules": {
+                "unused-files": "off",
+                "unused-exports": "off",
+                "unused-types": "off"
+            }
+        },
+        {
+            // Building blocks kept for opt-in use: media-image (media slots
+            // for sections), loading-state (the documented loading
+            // convention), and use-mobile (a dependency of the shipped
+            // sidebar primitive in ui/*).
+            "files": [
+                "resources/js/components/media-image.tsx",
+                "resources/js/components/loading-state.tsx",
+                "resources/js/hooks/use-mobile.tsx"
+            ],
+            "rules": {
+                "unused-files": "off",
+                "unused-exports": "off"
+            }
+        }
+    ],
+    // The complexity gate measures CRAP against estimated coverage (0% —
+    // the starter ships no JS coverage pipeline). The ceilings below mark
+    // deliberate template code whose branching is feature-driven, not
+    // accidental. Everything outside these groups stays at default
+    // thresholds, so agent-added code still gets flagged.
+    "health": {
+        "ignore": [
+            // Same exemption as the dead-code override above: vendored
+            // shadcn primitives and the sections library are intentional
+            // building blocks — generated projects compose, don't edit.
+            "resources/js/components/ui/**",
+            "resources/js/components/sections/**"
+        ],
+        "thresholdOverrides": [
+            {
+                "files": [
+                    "resources/js/app.tsx",
+                    "resources/js/layouts/public-layout.tsx",
+                    "resources/js/pages/public/home.tsx"
+                ],
+                "maxCrap": 80,
+                "maxUnitSize": 230,
+                "reason": "App shell: layout resolver, public chrome, and the landing page are load-bearing template structure (documented in AGENTS.md), not accidental complexity."
+            },
+            {
+                "files": [
+                    "resources/js/pages/public/contact.tsx"
+                ],
+                "maxCrap": 45,
+                "maxUnitSize": 180,
+                "reason": "The contact form is deliberately one file so generated projects replace it wholesale."
+            }
+        ]
+    }
+}
